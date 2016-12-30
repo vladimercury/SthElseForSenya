@@ -3,15 +3,18 @@ def parse_first():
     result = []
     topics = []
     topic = None
+    has_class = None
     for line in input_data:
         if line.startswith('\t'):
             poss = line.split()
             topics.append((poss[0], float(poss[1])))
         else:
             if topic is not None:
-                result.append((topic, topics))
+                result.append((topic, has_class, topics))
                 topics = list()
-            topic = line
+            split = line.split()
+            topic = ' '.join(split[:-1])
+            has_class = split[-1]
     result.append((topic, topics))
     return result
 
@@ -42,5 +45,5 @@ out = open('out.txt', 'w')
 
 for key in sites_themes:
     theme = max(range(len(sites_themes[key])), key=lambda x: sites_themes[key][x])
-    out.write(' '.join([sites[key]] + [x[0] for x in themes[theme][1]]) + '\n')
+    out.write(sites[key]+ ' ' + themes[theme][1] + '\n')
 out.close()
