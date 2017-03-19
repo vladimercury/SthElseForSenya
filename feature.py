@@ -32,6 +32,15 @@ def get_matrix(topics):
     return mat
 
 
+def get_arr(train, test):
+    import numpy as np
+    mat = np.zeros((len(train)))
+    for i in range(len(train)):
+        x = len(set(train[i][1]) & set(test[i][1]))
+        mat[i] = x / len(train[i][1])
+    return mat
+
+
 def get_matrix_poss(topics):
     import numpy as np
     mat = np.zeros((len(topics), len(topics)))
@@ -50,6 +59,44 @@ def get_matrix_poss(topics):
                 x = common_poss - uncommon_poss
                 mat[i][j] = x
                 mat[j][i] = x
+    return mat
+
+
+def get_arr_poss(train, test):
+    import numpy as np
+    mat = np.zeros((len(train)))
+    for i in range(len(train)):
+        left, right = train[i][1], test[i][1]
+        common = set(left) & set(right)
+        uncommon_left = set(left) - common
+        common_poss = sum([left[x] for x in common])
+        uncommon_poss = sum([left[x] for x in uncommon_left])
+        x = common_poss - uncommon_poss
+        mat[i] = x
+        print({key: left[key] for key in common})
+        print({key: right[key] for key in common})
+    return mat
+
+
+def get_arr_jaccard(train, test):
+    import numpy as np
+    mat = np.zeros((len(train)))
+    for i in range(len(train)):
+        c = len(set(train[i][1]) & set(test[i][1]))
+        a = len(train[i][1]) + len(test[i][1])
+        mat[i] = c / (a - c)
+    return mat
+
+
+def get_arr_jaccard_weight(train, test):
+    import numpy as np
+    mat = np.zeros((len(train)))
+    for i in range(len(train)):
+        left, right = train[i][1], test[i][1]
+        common = set(left) & set(right)
+        c = sum([right[x] for x in common])
+        a = sum(left.values()) + sum(right.values())
+        mat[i] = c / (a - c)
     return mat
 
 
@@ -78,9 +125,14 @@ def show_3d(mtrx):
     ha = hf.add_subplot(111, projection='3d')
 
     X, Y = np.meshgrid(xr, yr)
-    ha.plot_surface(X, Y, avg_matrix)
+    ha.plot_surface(X, Y, mtrx)
     pt.show()
 
+def show_arr(mtrx):
+    import pylab as pt
+    fig = pt.figure()
+    pt.plot(range(len(mtrx)), mtrx)
+    pt.show()
 
 def show_mat(mtrx):
     import pylab as pt
@@ -91,16 +143,35 @@ def show_mat(mtrx):
     pt.show()
 
 
-data = []
-res = []
-for i in range(1, 5):
-    data.append(parse('test/model-test-2-' + str(i) + '0.twords'))
-    res.append(get_matrix(data[-1]))
-avg_matrix = res[0]
-for i in range(1, len(res)):
-    avg_matrix = avg_matrix + res[i]
-avg_matrix /= len(res)
+def normalize_weights(dat):
+    for i in dat:
+        coef = 1 / max(i[1].values())
+        for j in i[1]:
+            i[1][j] *= coef
+#
+# train_data = parse('/home/vladimercury/CppProjects/linkedLDA/model/training3/model-test-2.inf.twords')
+# test_data = parse('/home/vladimercury/CppProjects/linkedLDA/model/test2/model-test-2.inf.twords')
+train_data = parse ('test/model-test-2-30.twords')
+test_data = parse('test/model-test-2-40.twords')
 
-show_mat(avg_matrix)
-print(sorted(data[1][2][1].keys()))
-print(sorted(data[1][41][1].keys()))
+# normalize_weights(train_data)
+# normalize_weights(test_data)
+
+print(train_data)
+print(test_data)
+
+commons = get_arr(train_data, test_data)
+print(commons)
+show_arr(commons)
+
+# for i in range(1, 5):
+#     data.append(parse('test/model-test-2-' + str(i) + '0.twords'))
+#     res.append(get_matrix(data[-1]))
+# avg_matrix = res[0]
+# for i in range(1, len(res)):
+#     avg_matrix = avg_matrix + res[i]
+# avg_matrix /= len(res)
+#
+# show_3d(avg_matrix)
+# print(sorted(data[1][2][1].keys()))
+# print(sorted(data[1][41][1].keys()))
