@@ -4,22 +4,19 @@ from pprint import pprint
 from TextSimilarity import TextSimilarity
 import numpy as np
 
+SINGLE_FILE = True
+SINGLE_PATH = '/home/vladimercury/PycharmProjects/SthElseForSenya/test/model-min.twords'
 
 N_TOPICS = 1
-#PATH_PREFIX = '/home/vladimercury/CppProjects/linkedLDA/model/model-new-'
-PATH_PREFIX = 'test/model-test-2-'
-SINGLE_PATH = '/home/vladimercury/PycharmProjects/SthElseForSenya/test/model-min.twords'
 FILES_LIST = [
     '/home/vladimercury/CppProjects/linkedLDA/model/training3/model-test-2.inf.twords',
     '/home/vladimercury/CppProjects/linkedLDA/model/test2/model-test-2.inf.twords',
 ]
-# FILES_LIST = [
-#     'test/model-test-2-10.twords',
-#     'test/model-test-2-20.twords',
-# ]
-PATH_RANGE_START = 10
-PATH_RANGE_END = 40
-PATH_RANGE_STEP = 10
+
+# PATH_PREFIX = 'test/model-test-2-'
+# PATH_RANGE_START = 10
+# PATH_RANGE_END = 40
+# PATH_RANGE_STEP = 10
 
 
 def nok(a, b):
@@ -54,43 +51,38 @@ def get_topics_single_file():
         topics_list[0].append(topic)
     return topics_list
 
+# def generate_fractions(data):
+#     fractions = list()
+#     for topic in data:
+#         line = list()
+#         normalizer = 1 / topic[1][0][1]
+#         for word in topic[1]:
+#             line.append((word[0], Fraction(word[1] * normalizer).limit_denominator(10)))
+#         fractions.append(line)
+#     return fractions
 #
 #
+# def normalize_fractions(topics):
+#     for i in range(len(topics)):
+#         multiplier = 1
+#         for j in range(len(topics[i])):
+#             multiplier = nok(multiplier, topics[i][j][1].denominator)
+#         for j in range(len(topics[i])):
+#             topics[i][j] = (topics[i][j][0], topics[i][j][1] * multiplier)
+#     return topics
 #
-def generate_fractions(data):
-    fractions = list()
-    for topic in data:
-        line = list()
-        normalizer = 1 / topic[1][0][1]
-        for word in topic[1]:
-            line.append((word[0], Fraction(word[1] * normalizer).limit_denominator(10)))
-        fractions.append(line)
-    return fractions
+#
+# def generate_text(topics):
+#     text = []
+#     for topic in topics:
+#         line = ''
+#         for word in topic:
+#             for i in range(word[1].numerator):
+#                 line += word[0] + ' '
+#         text.append(line)
+#     return text
 
 
-def normalize_fractions(topics):
-    for i in range(len(topics)):
-        multiplier = 1
-        for j in range(len(topics[i])):
-            multiplier = nok(multiplier, topics[i][j][1].denominator)
-        for j in range(len(topics[i])):
-            topics[i][j] = (topics[i][j][0], topics[i][j][1] * multiplier)
-    return topics
-
-
-def generate_text(topics):
-    text = []
-    for topic in topics:
-        line = ''
-        for word in topic:
-            for i in range(word[1].numerator):
-                line += word[0] + ' '
-        text.append(line)
-    return text
-
-#
-#
-#
 def normalize_weights(data):
     normalized_data = []
     for topic in data:
@@ -144,17 +136,20 @@ def print_cosine(cosine_matrix, stream):
     print(np.asarray(sorted(sparse_cosine, key=lambda x: x[2], reverse=True)), file=stream)
 
 file = open('cosine.txt', 'w')
-file2 = open('cosine2.txt', 'w')
+# file2 = open('cosine2.txt', 'w')
 np.set_printoptions(linewidth=100000)
 np.set_printoptions(threshold=np.nan)
 np.set_printoptions(suppress=True)
-topic_set = get_topics(N_TOPICS)
-#topic_set = get_topics_single_file()
+topic_set = []
+if SINGLE_FILE:
+    topic_set = get_topics_single_file()
+else:
+    topic_set = get_topics(N_TOPICS)
 
 for topic_num in range(len(topic_set)):
     print('File ' + str(topic_num + 1), file=file)
-    print('File ' + str(topic_num + 1), file=file2)
-    print_cosine(TextSimilarity().get_cosine_similarity(generate_text(normalize_fractions(generate_fractions(topic_set[topic_num])))), file)
-    print_cosine(TextSimilarity().get_cosine_similarity_tfidf(generate_tfidf(topic_set[topic_num])), file2)
+    # print('File ' + str(topic_num + 1), file=file2)
+    # print_cosine(TextSimilarity().get_cosine_similarity(generate_text(normalize_fractions(generate_fractions(topic_set[topic_num])))), file2)
+    print_cosine(TextSimilarity().get_cosine_similarity_tfidf(generate_tfidf(topic_set[topic_num])), file)
 file.close()
-file2.close()
+# file2.close()
